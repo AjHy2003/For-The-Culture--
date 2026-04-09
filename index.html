@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For the Culture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #04080f;
+      --bg-card: #080f1c;
+      --bg-card2: #0a1526;
+      --cyan: #00d4ff;
+      --cyan-dim: rgba(0,212,255,0.12);
+      --cyan-glow: rgba(0,212,255,0.45);
+      --orange: #ff6b35;
+      --white: #f0f4ff;
+      --white-dim: rgba(240,244,255,0.55);
+      --white-faint: rgba(240,244,255,0.06);
+      --border: rgba(0,212,255,0.14);
+      --border-hover: rgba(0,212,255,0.55);
+      --font-display: 'Bebas Neue', 'Impact', sans-serif;
+      --font-body: 'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── ANIMATED BG ── */
+    .bg-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .bg-noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,80,255,0.18), transparent 70%);
+      top: -200px; right: -150px;
+      animation: drift1 14s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 450px; height: 450px;
+      background: radial-gradient(circle, rgba(0,212,255,0.1), transparent 70%);
+      bottom: 50px; left: -100px;
+      animation: drift2 18s ease-in-out infinite alternate;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,107,53,0.08), transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: pulse 6s ease-in-out infinite;
+    }
+    @keyframes drift1 { to { transform: translate(40px, 60px); } }
+    @keyframes drift2 { to { transform: translate(-30px, -50px); } }
+    @keyframes pulse { 0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.15); } }
+
+    /* ── SCAN LINE EFFECT ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 5%;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 5% 0;
+      text-align: center;
+    }
+
+    .logo-wrap {
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .logo-line1 {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      letter-spacing: 0.5em;
+      color: var(--cyan);
+      display: block;
+      text-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .logo-line2 {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 12vw, 8rem);
+      letter-spacing: 0.06em;
+      line-height: 0.9;
+      color: var(--white);
+      display: block;
+      position: relative;
+    }
+
+    .logo-line2::after {
+      content: 'CULTURE';
+      position: absolute;
+      inset: 0;
+      color: var(--cyan);
+      text-shadow: 0 0 40px var(--cyan-glow), 0 0 80px rgba(0,212,255,0.3);
+      clip-path: inset(0 60% 0 0);
+      animation: glitch 8s ease-in-out infinite;
+    }
+
+    @keyframes glitch {
+      0%, 90%, 100% { clip-path: inset(0 60% 0 0); transform: translate(0); }
+      92% { clip-path: inset(20% 0 40% 0); transform: translate(-3px, 2px); }
+      94% { clip-path: inset(50% 0 20% 0); transform: translate(3px, -1px); }
+      96% { clip-path: inset(0 60% 0 0); transform: translate(0); }
+    }
+
+    .header-divider {
+      width: 120px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      margin: 1.2rem auto;
+    }
+
+    .tagline {
+      color: var(--white-dim);
+      font-size: 0.9rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      max-width: 480px;
+      margin: 0 auto 3rem;
+    }
+
+    /* ── SEARCH CARD ── */
+    .search-card {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(8,15,28,0.9) 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.8rem;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
+    }
+
+    .search-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .search-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; top: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .section-eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.5rem;
+    }
+
+    .search-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .search-sub {
+      color: var(--white-dim);
+      font-size: 0.88rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── INPUT ── */
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: rgba(0,212,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 1.4rem;
+      margin-bottom: 2rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1), 0 0 20px rgba(0,212,255,0.1);
+    }
+
+    .input-icon { font-size: 1rem; opacity: 0.4; margin-right: 1rem; flex-shrink: 0; }
+
+    input[type="text"] {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      padding: 1.1rem 0;
+    }
+
+    input::placeholder { color: rgba(240,244,255,0.2); }
+
+    /* ── FILTERS ── */
+    .filters { display: grid; gap: 1.8rem; margin-bottom: 2.2rem; }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.8rem;
+    }
+
+    .filter-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.8rem;
+    }
+
+    .filter-group label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .chip {
+      background: var(--white-faint);
+      border: 1px solid rgba(240,244,255,0.1);
+      color: var(--white-dim);
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      font-weight: 500;
+      padding: 0.38rem 0.85rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
+    .chip:hover {
+      border-color: rgba(0,212,255,0.4);
+      color: var(--white);
+      background: rgba(0,212,255,0.06);
+    }
+
+    .chip.active {
+      background: rgba(0,212,255,0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,212,255,0.2);
+    }
+
+    /* ── BUTTON ── */
+    .cta-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0055ff 0%, #00aaff 50%, #00d4ff 100%);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.12em;
+      padding: 1.1rem 2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 30px rgba(0,150,255,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .cta-btn:hover::before { left: 100%; }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(0,212,255,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-icon { font-size: 1.3rem; transition: transform 0.2s; }
+    .cta-btn:not(:disabled):hover .btn-icon { transform: translateX(5px); }
+
+    /* ── LOADER ── */
+    .loader {
+      width: 22px; height: 22px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 3rem 0 2rem;
+    }
+    .section-divider::before, .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .tag {
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.7rem;
+      border-radius: 50px;
+      border: 1px solid;
+    }
+
+    .tag-cyan { color: var(--cyan); border-color: var(--border); background: var(--cyan-dim); }
+    .tag-orange { color: var(--orange); border-color: rgba(255,107,53,0.3); background: rgba(255,107,53,0.1); }
+
+    /* ── RESULTS GRID ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.7rem;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), #0055ff);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .result-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0,212,255,0.35);
+      box-shadow: 0 16px 50px rgba(0,212,255,0.1);
+    }
+
+    .result-card:hover::before { opacity: 1; }
+
+    .card-num {
+      position: absolute;
+      top: 1.2rem; right: 1.4rem;
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: rgba(0,212,255,0.06);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .card-medium {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+      margin-bottom: 0.9rem;
+      color: var(--white);
+    }
+
+    .card-desc {
+      color: var(--white-dim);
+      font-size: 0.87rem;
+      line-height: 1.7;
+      margin-bottom: 1.1rem;
+    }
+
+    .card-why {
+      background: rgba(0,212,255,0.07);
+      border-left: 2px solid var(--cyan);
+      border-radius: 0 8px 8px 0;
+      padding: 0.7rem 0.9rem;
+      font-size: 0.82rem;
+      color: rgba(0,212,255,0.85);
+      line-height: 1.55;
+    }
+
+
+    /* ── CARD IMAGE ── */
+    .card-img-wrap {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: rgba(0,212,255,0.05);
+      position: relative;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .result-card:hover .card-img { transform: scale(1.04); }
+
+    .card-img-skeleton {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(0,212,255,0.05) 25%, rgba(0,212,255,0.12) 50%, rgba(0,212,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .card-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      opacity: 0.2;
+    }
+
+
+    /* ── CARD IMAGE ── */
+    .card-img-wrap {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: rgba(0,212,255,0.05);
+      position: relative;
+    }
+    .card-img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.3s ease;
+    }
+    .result-card:hover .card-img { transform: scale(1.04); }
+    .card-img-skeleton {
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, rgba(0,212,255,0.05) 25%, rgba(0,212,255,0.12) 50%, rgba(0,212,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .card-img-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; opacity: 0.2;
+    }
+
+    /* ── CULTURE GRID ── */
+    .culture-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.4rem;
+      margin-bottom: 4rem;
+    }
+
+    .culture-card {
+      background: var(--bg-card2);
+      border: 1px solid rgba(255,107,53,0.15);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .culture-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--orange), #ff9500);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .culture-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,107,53,0.4);
+      box-shadow: 0 14px 40px rgba(255,107,53,0.1);
+    }
+
+    .culture-card:hover::before { opacity: 1; }
+
+    .culture-category {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 0.45rem;
+    }
+
+    .culture-item {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 0.6rem;
+      color: var(--white);
+    }
+
+    .culture-desc {
+      color: var(--white-dim);
+      font-size: 0.85rem;
+      line-height: 1.65;
+      margin-bottom: 0.9rem;
+    }
+
+    .culture-where {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .where-tag {
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.2);
+      color: rgba(255,107,53,0.8);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    /* ── ERROR ── */
+    .error-msg {
+      background: rgba(255,50,50,0.08);
+      border: 1px solid rgba(255,50,50,0.25);
+      border-radius: 10px;
+      padding: 1rem 1.3rem;
+      color: #ff7070;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: rgba(240,244,255,0.18);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+
+    footer span { color: var(--cyan); opacity: 0.5; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeUp 0.5s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .search-card { padding: 1.6rem; }
+      .filter-row { grid-template-columns: 1fr; }
+      .results-grid, .culture-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      background: #080f1c;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 18px 18px 0 0;
+      display: block;
+    }
+
+    .modal-img-placeholder {
+      width: 100%; height: 220px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem;
+      background: rgba(0,212,255,0.05);
+      border-radius: 18px 18px 0 0;
+    }
+
+    .modal-body { padding: 2rem; }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 1.2rem;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+    .modal-close:hover { background: rgba(0,212,255,0.2); }
+
+    .modal-eyebrow {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+    }
+
+    .modal-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-tag {
+      background: var(--white-faint);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--white-dim);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 50px;
+    }
+
+    .modal-desc {
+      color: var(--white-dim);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-why {
+      background: rgba(0,212,255,0.07);
+      border-left: 2px solid var(--cyan);
+      border-radius: 0 8px 8px 0;
+      padding: 0.8rem 1rem;
+      font-size: 0.88rem;
+      color: rgba(0,212,255,0.9);
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+
+    .modal-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #0055ff, #00d4ff);
+      color: white;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      padding: 0.75rem 1.6rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 0.6rem;
+      margin-bottom: 0.5rem;
+      border: none;
+      cursor: pointer;
+    }
+    .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,212,255,0.35); }
+    .modal-btn-orange {
+      background: linear-gradient(135deg, #ff6b35, #ff9500);
+      box-shadow: none;
+    }
+    .modal-btn-orange:hover { box-shadow: 0 6px 20px rgba(255,107,53,0.35); }
+
+    /* Make cards clickable */
+    .result-card, .culture-card { cursor: pointer; }
+
+  </style>
+</head>
+<body>
+
+  <!-- BG -->
+  <div class="bg-wrap">
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-wrap">
+      <span class="logo-line1">✦ ALI J. HENRY PRESENTS ✦</span>
+      <span class="logo-line2">CULTURE</span>
+    </div>
+    <div class="header-divider"></div>
+    <p class="tagline">AI-powered recommendations for every medium — anime, manga, manhwa, novels & the lifestyle to match.</p>
+  </header>
+
+  <!-- MAIN -->
+  <div class="page">
+
+    <!-- SEARCH CARD -->
+    <section>
+      <div class="search-card">
+        <div class="section-eyebrow">✦ Discover</div>
+        <h2 class="search-title">WHAT ARE YOU INTO?</h2>
+        <p class="search-sub">Drop a title you love or pick your filters — AI handles the rest.</p>
+
+        <div class="input-wrap">
+          <span class="input-icon">🔍</span>
+          <input type="text" id="titleInput" placeholder="e.g. Naruto, Solo Leveling, Dragon Ball Z..." autocomplete="off"/>
+        </div>
+
+        <div class="filters">
+          <!-- Medium -->
+          <div class="filter-group">
+            <label>Medium</label>
+            <div class="chip-group" id="mediumChips">
+              <button class="chip active" data-value="any">Any</button>
+              <button class="chip" data-value="anime series">Anime Series</button>
+              <button class="chip" data-value="anime movie">Anime Movie</button>
+              <button class="chip" data-value="manga">Manga</button>
+              <button class="chip" data-value="manhwa">Manhwa</button>
+              <button class="chip" data-value="manhua">Manhua</button>
+              <button class="chip" data-value="light novel">Light Novel</button>
+              <button class="chip" data-value="web novel">Web Novel</button>
+              <button class="chip" data-value="live action">Live Action</button>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <!-- Genre -->
+            <div class="filter-group">
+              <label>Genre</label>
+              <div class="chip-group" id="genreChips">
+                <button class="chip active" data-value="any">Any</button>
+                <button class="chip" data-value="shounen">Shounen</button>
+                <button class="chip" data-value="seinen">Seinen</button>
+                <button class="chip" data-value="shoujo">Shoujo</button>
+                <button class="chip" data-value="isekai">Isekai</button>
+                <button class="chip" data-value="action">Action</button>
+                <button class="chip" data-value="romance">Romance</button>
+                <button class="chip" data-value="horror">Horror</button>
+                <button class="chip" data-value="comedy">Comedy</button>
+                <button class="chip" data-value="fantasy">Fantasy</button>
+                <button class="chip" data-value="sci-fi">Sci-Fi</button>
+                <button class="chip" data-value="slice of life">Slice of Life</button>
+                <button class="chip" data-value="psychological">Psychological</button>
+              </div>
+            </div>
+
+            <!-- Mood -->
+            <div class="filter-group">
+              <label>Mood</label>
+              <div class="chip-group" id="moodChips">
+                <button class="chip active" data-value="any">Any</button>
+                <button class="chip" data-value="hype">🔥 Hype</button>
+                <button class="chip" data-value="chill">😌 Chill</button>
+                <button class="chip" data-value="dark">🌑 Dark</button>
+                <button class="chip" data-value="emotional">💔 Emotional</button>
+                <button class="chip" data-value="funny">😂 Funny</button>
+                <button class="chip" data-value="epic">⚡ Epic</button>
+              </div>
+            </div>
+
+            <!-- Length -->
+            <div class="filter-group">
+              <label>Length</label>
+              <div class="chip-group" id="lengthChips">
+                <button class="chip active" data-value="any">Any</button>
+                <button class="chip" data-value="short (under 26 episodes or 5 volumes)">Short</button>
+                <button class="chip" data-value="medium (26-100 episodes or 5-20 volumes)">Medium</button>
+                <button class="chip" data-value="long or ongoing">Long / Ongoing</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="cta-btn" id="recommendBtn">
+          <span class="btn-text">GET RECOMMENDATIONS</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="resultsSection" style="display:none">
+      <div class="section-divider fade-in">
+        <div class="section-label">YOUR PICKS <span class="tag tag-cyan">AI CURATED</span></div>
+      </div>
+      <div class="results-grid" id="resultsGrid"></div>
+    </section>
+
+    <!-- CULTURE -->
+    <section id="cultureSection" style="display:none">
+      <div class="section-divider fade-in">
+        <div class="section-label">REP THE CULTURE <span class="tag tag-orange">MERCH & LIFESTYLE</span></div>
+      </div>
+      <p style="color:var(--white-dim); font-size:0.88rem; margin-bottom:1.5rem; margin-top:-1rem;">Because the fit matters as much as the story.</p>
+      <div class="culture-grid" id="cultureGrid"></div>
+    </section>
+
+  </div>
+
+  <footer>
+    FOR THE CULTURE &nbsp;·&nbsp; Built by <span>Ali J. Henry</span> &nbsp;·&nbsp; Powered by Claude AI
+  </footer>
+
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModal(event)">
+    <div class="modal" id="modalBox">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+
+    // ── MODAL ──
+    const recData = [];
+    const cultureData = [];
+
+    function openModal(html) {
+      const overlay = document.getElementById('modalOverlay');
+      document.getElementById('modalContent').innerHTML = html;
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModalDirect() {
+      document.getElementById('modalOverlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+    function openRecModal(i) {
+      const r = recData[i];
+      if (!r) return;
+      const imgEl = document.getElementById(`card-img-${i}`)?.querySelector('img');
+      const imgSrc = imgEl ? imgEl.src : null;
+      const imgHtml = imgSrc
+        ? `<img class="modal-img" src="${imgSrc}" alt="${r.title}" onerror="this.style.display='none'">`
+        : `<div class="modal-img-placeholder">🎌</div>`;
+
+      const searchQuery = encodeURIComponent(r.title + ' ' + (r.medium || '') + ' watch read');
+      openModal(`
+        ${imgHtml}
+        <div class="modal-body">
+          <div class="modal-eyebrow">${r.medium || 'Series'}</div>
+          <div class="modal-title">${r.title}</div>
+          <div class="modal-desc">${r.description}</div>
+          <div class="modal-why"><strong style="color:var(--cyan)">Why you'd like it:</strong> ${r.why}</div>
+          <a class="modal-btn" href="https://myanimelist.net/search/all?q=${encodeURIComponent(r.title)}" target="_blank">View on MAL →</a>
+          <a class="modal-btn" href="https://www.google.com/search?q=${searchQuery}" target="_blank">Search Online →</a>
+        </div>
+      `);
+    }
+
+    function openCultureModal(i) {
+      const item = cultureData[i];
+      if (!item) return;
+      const whereLinks = (item.where || []).map(w => {
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.name + ' ' + w)}`;
+        return `<a class="modal-btn modal-btn-orange" href="${searchUrl}" target="_blank">Find on ${w} →</a>`;
+      }).join('');
+
+      openModal(`
+        <div class="modal-img-placeholder" style="font-size:4rem; height:160px; border-radius:18px 18px 0 0">${getCultureEmoji(item.category)}</div>
+        <div class="modal-body">
+          <div class="modal-eyebrow" style="color:var(--orange)">${item.category}</div>
+          <div class="modal-title">${item.name}</div>
+          <div class="modal-desc">${item.description}</div>
+          <div style="margin-top:1rem">${whereLinks}</div>
+        </div>
+      `);
+    }
+
+    function getCultureEmoji(category) {
+      const map = {
+        'Clothing': '👕', 'Poster': '🖼️', 'Shoes': '👟',
+        'Jewelry': '💍', 'Tattoo Idea': '🎨', 'Figure': '🏆',
+        'Accessory': '⚡'
+      };
+      return map[category] || '🎌';
+    }
+
+    // ── STATE ──
+    const state = { medium: 'any', genre: 'any', mood: 'any', length: 'any' };
+
+    // ── CHIP SETUP ──
+    function setupChips(id, key) {
+      const group = document.getElementById(id);
+      group.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state[key] = chip.dataset.value;
+        });
+      });
+    }
+    setupChips('mediumChips', 'medium');
+    setupChips('genreChips', 'genre');
+    setupChips('moodChips', 'mood');
+    setupChips('lengthChips', 'length');
+
+    // ── HELPERS ──
+    const $ = id => document.getElementById(id);
+    const show = id => $(id).style.display = 'block';
+    const hide = id => $(id).style.display = 'none';
+
+    function setLoading(on) {
+      const btn = $('recommendBtn');
+      btn.disabled = on;
+      btn.innerHTML = on
+        ? '<div class="loader"></div>'
+        : '<span class="btn-text">GET RECOMMENDATIONS</span><span class="btn-icon">→</span>';
+    }
+
+    // ── JIKAN IMAGE FETCH ──
+    async function fetchCoverImage(title, medium) {
+      try {
+        const isManga = medium && (medium.toLowerCase().includes('manga') || 
+          medium.toLowerCase().includes('manhwa') || 
+          medium.toLowerCase().includes('manhua') ||
+          medium.toLowerCase().includes('novel'));
+        const type = isManga ? 'manga' : 'anime';
+        const query = encodeURIComponent(title);
+        const res = await fetch(`https://api.jikan.moe/v4/${type}?q=${query}&limit=1`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.data?.[0]?.images?.jpg?.large_image_url || 
+               data.data?.[0]?.images?.jpg?.image_url || null;
+      } catch { return null; }
+    }
+
+    // ── RENDER ──
+    function renderResults(recs) {
+      recData.length = 0;
+      recs.forEach(r => recData.push(r));
+      const grid = $('resultsGrid');
+      grid.innerHTML = '';
+      recs.forEach((r, i) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.style.animationDelay = `${i * 0.09}s`;
+        const imgId = `card-img-${i}`;
+        card.innerHTML = `
+          <div class="card-img-wrap" id="${imgId}">
+            <div class="card-img-skeleton"></div>
+          </div>
+          <div class="card-num">0${i+1}</div>
+          <div class="card-medium">${r.medium || 'Series'}</div>
+          <div class="card-title">${r.title}</div>
+          <div class="card-desc">${r.description}</div>
+          <div class="card-why"><strong style="color:var(--cyan)">Why you'd like it:</strong> ${r.why}</div>
+        `;
+        card.addEventListener('click', () => openRecModal(i));
+        grid.appendChild(card);
+
+        // Fetch image async after card renders
+        fetchCoverImage(r.title, r.medium).then(url => {
+          const wrap = document.getElementById(imgId);
+          if (!wrap) return;
+          if (url) {
+            wrap.innerHTML = `<img class="card-img" src="${url}" alt="${r.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder>🎌</div>'"/>`;
+          } else {
+            wrap.innerHTML = `<div class="card-img-placeholder">🎌</div>`;
+          }
+        });
+      });
+      show('resultsSection');
+    }
+
+    function renderCulture(items) {
+      cultureData.length = 0;
+      items.forEach(item => cultureData.push(item));
+      const grid = $('cultureGrid');
+      grid.innerHTML = '';
+      items.forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = 'culture-card';
+        card.style.animationDelay = `${i * 0.07}s`;
+        const tags = (item.where || []).map(w => `<span class="where-tag">${w}</span>`).join('');
+        card.innerHTML = `
+          <div class="culture-category">${item.category}</div>
+          <div class="culture-item">${item.name}</div>
+          <div class="culture-desc">${item.description}</div>
+          <div class="culture-where">${tags}</div>
+        `;
+        card.addEventListener('click', () => openCultureModal(i));
+        grid.appendChild(card);
+      });
+      show('cultureSection');
+    }
+
+    // ── PROMPT ──
+    function buildPrompt(title, medium, genre, mood, length) {
+      const filters = [
+        medium !== 'any' ? `Medium: ${medium}` : null,
+        genre !== 'any' ? `Genre: ${genre}` : null,
+        mood !== 'any' ? `Mood: ${mood}` : null,
+        length !== 'any' ? `Length: ${length}` : null,
+      ].filter(Boolean).join(' | ');
+
+      return `You are a passionate otaku and streetwear culture expert.
+${title ? `The user loves "${title}" — recommend similar content.` : 'Recommend based on their filters only.'}
+${filters ? `Preferences: ${filters}` : ''}
+
+Return ONLY valid JSON, no markdown, no explanation:
+
+{
+  "recommendations": [
+    {
+      "title": "string",
+      "medium": "Anime Series / Manga / Manhwa / Manhua / Light Novel / Web Novel / Anime Movie / Live Action",
+      "description": "2-3 sentences about the series and why it slaps.",
+      "why": "1-2 sentences why this matches the user's specific taste."
+    }
+  ],
+  "culture": [
+    {
+      "category": "Clothing / Poster / Shoes / Jewelry / Tattoo Idea / Figure / Accessory",
+      "name": "Specific real product name",
+      "description": "What it is, what it looks like, why it fits the vibe.",
+      "where": ["store1", "store2"]
+    }
+  ]
+}
+
+Rules:
+- Exactly 5 recommendations, exactly 6 culture items
+- Culture items must be SPECIFIC named products (e.g. "Ripple Junction Naruto Shippuden Akatsuki Symbol Zip Hoodie" not just "hoodie")
+- Spread culture across: 1 clothing, 1 poster, 1 shoes, 1 jewelry, 1 tattoo idea, 1 figure or accessory
+- Tattoo: describe a specific design (e.g. "Fine-line minimalist Sharingan eye on the inner wrist")
+- Shoes: name real collabs or themed colorways (e.g. "Nike Dunk Low DBZ Goku colorway by Custom Culture")
+- Where to buy: use real stores like Amazon, Hot Topic, Crunchyroll Shop, Redbubble, Etsy, StockX, BoxLunch, FYE
+- Output ONLY the JSON object`;
+    }
+
+    // ── API CALL ──
+    async function callClaude(prompt) {
+      const res = await fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+      const text = data.content.map(b => b.text || '').join('');
+      return JSON.parse(text.replace(/```json|```/g, '').trim());
+    }
+
+    // ── MAIN ──
+    $('recommendBtn').addEventListener('click', async () => {
+      const title = $('titleInput').value.trim();
+      if (!title && state.medium === 'any' && state.genre === 'any' && state.mood === 'any') {
+        $('titleInput').focus();
+        $('titleInput').placeholder = 'Enter a title or pick some filters first...';
+        return;
+      }
+
+      setLoading(true);
+      hide('resultsSection');
+      hide('cultureSection');
+
+      try {
+        const result = await callClaude(buildPrompt(title, state.medium, state.genre, state.mood, state.length));
+        if (result.recommendations) renderResults(result.recommendations);
+        if (result.culture) renderCulture(result.culture);
+        $('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        console.error(err);
+        $('resultsGrid').innerHTML = `<div class="error-msg">⚠️ ${err.message}<br><small>If running locally, you'll need the backend server running. See README.</small></div>`;
+        show('resultsSection');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    $('titleInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') $('recommendBtn').click();
+    });
+  </script>
+</body>
+</html>
