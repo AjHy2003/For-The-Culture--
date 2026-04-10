@@ -1110,8 +1110,8 @@
       const item = cultureData[i];
       if (!item) return;
       const whereLinks = (item.where || []).map(w => {
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.name + ' ' + w)}`;
-        return `<a class="modal-btn modal-btn-orange" href="${searchUrl}" target="_blank">Find on ${w} →</a>`;
+        const url = STORE_URLS[w] ? STORE_URLS[w](item.name) : `https://www.google.com/search?q=${encodeURIComponent(item.name + ' ' + w)}`;
+        return `<a class="modal-btn modal-btn-orange" href="${url}" target="_blank">Find on ${w} →</a>`;
       }).join('');
 
       openModal(`
@@ -1136,6 +1136,20 @@
 
     // ── STATE ──
     const state = { medium: 'any', genre: 'any', mood: 'any', length: 'any' };
+
+    // ── STORE URLS ──
+    const STORE_URLS = {
+      'Amazon': n => `https://www.amazon.com/s?k=${encodeURIComponent(n)}`,
+      'Hot Topic': n => `https://www.hottopic.com/search?q=${encodeURIComponent(n)}`,
+      'Crunchyroll Shop': n => `https://store.crunchyroll.com/search?q=${encodeURIComponent(n)}`,
+      'Redbubble': n => `https://www.redbubble.com/shop/?query=${encodeURIComponent(n)}`,
+      'Etsy': n => `https://www.etsy.com/search?q=${encodeURIComponent(n)}`,
+      'StockX': n => `https://stockx.com/search?s=${encodeURIComponent(n)}`,
+      'BoxLunch': n => `https://www.boxlunch.com/search?q=${encodeURIComponent(n)}`,
+      'FYE': n => `https://www.fye.com/search#q=${encodeURIComponent(n)}`,
+      'Local tattoo parlor': _ => `https://www.google.com/search?q=tattoo+parlor+near+me`,
+      'Instagram tattoo artists': _ => `https://www.instagram.com/explore/tags/animetattoo/`,
+    };
 
     // ── SEARCH HISTORY ──
     const MAX_HISTORY = 8;
@@ -1288,18 +1302,6 @@
         const card = document.createElement('div');
         card.className = 'culture-card';
         card.style.animationDelay = `${i * 0.07}s`;
-        const STORE_URLS = {
-          'Amazon': n => `https://www.amazon.com/s?k=${encodeURIComponent(n)}`,
-          'Hot Topic': n => `https://www.hottopic.com/search?q=${encodeURIComponent(n)}`,
-          'Crunchyroll Shop': n => `https://store.crunchyroll.com/search?q=${encodeURIComponent(n)}`,
-          'Redbubble': n => `https://www.redbubble.com/shop/?query=${encodeURIComponent(n)}`,
-          'Etsy': n => `https://www.etsy.com/search?q=${encodeURIComponent(n)}`,
-          'StockX': n => `https://stockx.com/search?s=${encodeURIComponent(n)}`,
-          'BoxLunch': n => `https://www.boxlunch.com/search?q=${encodeURIComponent(n)}`,
-          'FYE': n => `https://www.fye.com/search#q=${encodeURIComponent(n)}`,
-          'Local tattoo parlor': _ => `https://www.google.com/search?q=tattoo+parlor+near+me`,
-          'Instagram tattoo artists': _ => `https://www.instagram.com/explore/tags/animetattoo/`,
-        };
         const tags = (item.where || []).map(w => {
           const url = STORE_URLS[w] ? STORE_URLS[w](item.name) : `https://www.google.com/search?q=${encodeURIComponent(item.name + ' ' + w)}`;
           return `<a class="where-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">${w} →</a>`;
