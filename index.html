@@ -649,12 +649,19 @@
     .where-tag {
       background: rgba(255,107,53,0.1);
       border: 1px solid rgba(255,107,53,0.2);
-      color: rgba(255,107,53,0.8);
+      color: rgba(255,107,53,0.9);
       font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.06em;
       padding: 0.2rem 0.55rem;
       border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .where-tag:hover {
+      background: rgba(255,107,53,0.25);
+      border-color: rgba(255,107,53,0.5);
     }
 
     /* ── ERROR ── */
@@ -696,6 +703,70 @@
       .filter-row { grid-template-columns: 1fr; }
       .results-grid, .culture-grid { grid-template-columns: 1fr; }
     }
+
+
+    /* ── SEARCH HISTORY ── */
+    .history-wrap {
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    .history-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.6rem;
+    }
+    .history-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .history-chip {
+      background: rgba(0,212,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--white-dim);
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .history-chip:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── SHARE BUTTON ── */
+    .share-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .share-btn {
+      background: var(--white-faint);
+      border: 1px solid var(--border);
+      color: var(--white-dim);
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.45rem 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .share-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .share-toast {
+      font-size: 0.78rem;
+      color: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .share-toast.show { opacity: 1; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -869,6 +940,12 @@
         <h2 class="search-title">WHAT ARE YOU INTO?</h2>
         <p class="search-sub">Drop a title you love or pick your filters — AI handles the rest.</p>
 
+        <!-- SEARCH HISTORY -->
+        <div class="history-wrap" id="historyWrap">
+          <div class="history-label">Recent searches</div>
+          <div class="history-chips" id="historyChips"></div>
+        </div>
+
         <div class="input-wrap">
           <span class="input-icon">🔍</span>
           <input type="text" id="titleInput" placeholder="e.g. Naruto, Solo Leveling, Dragon Ball Z..." autocomplete="off"/>
@@ -950,6 +1027,10 @@
     <section id="resultsSection" style="display:none">
       <div class="section-divider fade-in">
         <div class="section-label">YOUR PICKS <span class="tag tag-cyan">AI CURATED</span></div>
+      </div>
+      <div class="share-bar">
+        <button class="share-btn" id="shareBtn">🔗 Copy Link</button>
+        <span class="share-toast" id="shareToast">Link copied!</span>
       </div>
       <div class="results-grid" id="resultsGrid"></div>
     </section>
@@ -1056,6 +1137,64 @@
     // ── STATE ──
     const state = { medium: 'any', genre: 'any', mood: 'any', length: 'any' };
 
+    // ── SEARCH HISTORY ──
+    const MAX_HISTORY = 8;
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem('ftc_history') || '[]'); }
+      catch { return []; }
+    }
+
+    function saveToHistory(title) {
+      if (!title.trim()) return;
+      let h = getHistory().filter(t => t.toLowerCase() !== title.toLowerCase());
+      h.unshift(title.trim());
+      if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
+      localStorage.setItem('ftc_history', JSON.stringify(h));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const h = getHistory();
+      const wrap = $('historyWrap');
+      const chips = $('historyChips');
+      if (!h.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      chips.innerHTML = h.map(t => `<button class="history-chip" onclick="loadHistory('${t.replace(/'/g, "\'")}')">${t}</button>`).join('');
+    }
+
+    function loadHistory(title) {
+      $('titleInput').value = title;
+      $('recommendBtn').click();
+    }
+
+    // ── SHARE ──
+    function setupShare() {
+      $('shareBtn').addEventListener('click', () => {
+        const title = $('titleInput').value.trim();
+        const params = new URLSearchParams();
+        if (title) params.set('q', title);
+        if (state.medium !== 'any') params.set('medium', state.medium);
+        if (state.genre !== 'any') params.set('genre', state.genre);
+        if (state.mood !== 'any') params.set('mood', state.mood);
+        const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        navigator.clipboard.writeText(url).then(() => {
+          const toast = $('shareToast');
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2500);
+        });
+      });
+    }
+
+    // ── LOAD FROM URL PARAMS ──
+    function loadFromParams() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('q')) {
+        $('titleInput').value = params.get('q');
+        setTimeout(() => $('recommendBtn').click(), 500);
+      }
+    }
+
     // ── CHIP SETUP ──
     function setupChips(id, key) {
       const group = document.getElementById(id);
@@ -1149,7 +1288,22 @@
         const card = document.createElement('div');
         card.className = 'culture-card';
         card.style.animationDelay = `${i * 0.07}s`;
-        const tags = (item.where || []).map(w => `<span class="where-tag">${w}</span>`).join('');
+        const STORE_URLS = {
+          'Amazon': n => `https://www.amazon.com/s?k=${encodeURIComponent(n)}`,
+          'Hot Topic': n => `https://www.hottopic.com/search?q=${encodeURIComponent(n)}`,
+          'Crunchyroll Shop': n => `https://store.crunchyroll.com/search?q=${encodeURIComponent(n)}`,
+          'Redbubble': n => `https://www.redbubble.com/shop/?query=${encodeURIComponent(n)}`,
+          'Etsy': n => `https://www.etsy.com/search?q=${encodeURIComponent(n)}`,
+          'StockX': n => `https://stockx.com/search?s=${encodeURIComponent(n)}`,
+          'BoxLunch': n => `https://www.boxlunch.com/search?q=${encodeURIComponent(n)}`,
+          'FYE': n => `https://www.fye.com/search#q=${encodeURIComponent(n)}`,
+          'Local tattoo parlor': _ => `https://www.google.com/search?q=tattoo+parlor+near+me`,
+          'Instagram tattoo artists': _ => `https://www.instagram.com/explore/tags/animetattoo/`,
+        };
+        const tags = (item.where || []).map(w => {
+          const url = STORE_URLS[w] ? STORE_URLS[w](item.name) : `https://www.google.com/search?q=${encodeURIComponent(item.name + ' ' + w)}`;
+          return `<a class="where-tag" href="${url}" target="_blank" onclick="event.stopPropagation()">${w} →</a>`;
+        }).join('');
         card.innerHTML = `
           <div class="culture-category">${item.category}</div>
           <div class="culture-item">${item.name}</div>
@@ -1241,6 +1395,7 @@ Rules:
         if (result.recommendations) renderResults(result.recommendations);
         if (result.culture) renderCulture(result.culture);
         $('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        saveToHistory($('titleInput').value.trim());
       } catch (err) {
         console.error(err);
         $('resultsGrid').innerHTML = `<div class="error-msg">⚠️ ${err.message}<br><small>If running locally, you'll need the backend server running. See README.</small></div>`;
@@ -1249,6 +1404,11 @@ Rules:
         setLoading(false);
       }
     });
+
+    // Init
+    renderHistory();
+    setupShare();
+    loadFromParams();
 
     $('titleInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') $('recommendBtn').click();
