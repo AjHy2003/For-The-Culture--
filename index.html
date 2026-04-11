@@ -768,6 +768,12 @@
     }
     .share-toast.show { opacity: 1; }
 
+
+    .modal-btn-gold {
+      background: linear-gradient(135deg, #c8a84b, #e2c67a);
+      color: #0f1e3c;
+    }
+
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed;
@@ -1100,8 +1106,14 @@
           <div class="modal-title">${r.title}</div>
           <div class="modal-desc">${r.description}</div>
           <div class="modal-why"><strong style="color:var(--cyan)">Why you'd like it:</strong> ${r.why}</div>
-          <a class="modal-btn" href="https://myanimelist.net/search/all?q=${encodeURIComponent(r.title)}" target="_blank">View on MAL →</a>
-          <a class="modal-btn" href="https://www.google.com/search?q=${searchQuery}" target="_blank">Search Online →</a>
+          <div style="margin-bottom:0.5rem">
+            ${(r.watch || []).map(w => `<a class="modal-btn" href="${w.url}" target="_blank">${w.platform} →</a>`).join('')}
+            ${!(r.watch || []).length ? `<a class="modal-btn" href="https://www.google.com/search?q=${searchQuery}" target="_blank">Find Where to Watch →</a>` : ''}
+          </div>
+          <div>
+            ${(r.buy || []).map(b => `<a class="modal-btn" style="background:linear-gradient(135deg,#c8a84b,#e2c67a);color:#0f1e3c" href="${b.url}" target="_blank">Buy on ${b.platform} →</a>`).join('')}
+            <a class="modal-btn" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6)" href="https://myanimelist.net/search/all?q=${encodeURIComponent(r.title)}" target="_blank">MAL →</a>
+          </div>
         </div>
       `);
     }
@@ -1239,15 +1251,23 @@
     }
 
     // ── JIKAN IMAGE FETCH ──
-    async function fetchCoverImage(title, medium) {
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function fetchCoverImage(title, medium, attempt = 0) {
       try {
         const isManga = medium && (medium.toLowerCase().includes('manga') || 
           medium.toLowerCase().includes('manhwa') || 
           medium.toLowerCase().includes('manhua') ||
           medium.toLowerCase().includes('novel'));
         const type = isManga ? 'manga' : 'anime';
-        const query = encodeURIComponent(title);
-        const res = await fetch(`https://api.jikan.moe/v4/${type}?q=${query}&limit=1`);
+        // Clean title - remove subtitles and special chars for better matching
+        const cleanTitle = title.split(':')[0].split('!')[0].trim();
+        const query = encodeURIComponent(cleanTitle);
+        const res = await fetch(`https://api.jikan.moe/v4/${type}?q=${query}&limit=3`);
+        if (res.status === 429 && attempt < 2) {
+          await sleep(1500);
+          return fetchCoverImage(title, medium, attempt + 1);
+        }
         if (!res.ok) return null;
         const data = await res.json();
         return data.data?.[0]?.images?.jpg?.large_image_url || 
@@ -1279,8 +1299,8 @@
         card.addEventListener('click', () => openRecModal(i));
         grid.appendChild(card);
 
-        // Fetch image async after card renders
-        fetchCoverImage(r.title, r.medium).then(url => {
+        // Fetch image async with stagger to avoid rate limiting
+        setTimeout(() => fetchCoverImage(r.title, r.medium).then(url => {
           const wrap = document.getElementById(imgId);
           if (!wrap) return;
           if (url) {
@@ -1288,7 +1308,7 @@
           } else {
             wrap.innerHTML = `<div class="card-img-placeholder">🎌</div>`;
           }
-        });
+        }), i * 400); // 400ms stagger between each image fetch
       });
       show('resultsSection');
     }
@@ -1339,7 +1359,9 @@ Return ONLY valid JSON, no markdown, no explanation:
       "title": "string",
       "medium": "Anime Series / Manga / Manhwa / Manhua / Light Novel / Web Novel / Anime Movie / Live Action",
       "description": "2-3 sentences about the series and why it slaps.",
-      "why": "1-2 sentences why this matches the user's specific taste."
+      "why": "1-2 sentences why this matches the user's specific taste.",
+      "watch": [{"platform": "Crunchyroll", "url": "https://crunchyroll.com/..."}],
+      "buy": [{"platform": "Amazon", "url": "https://amazon.com/s?k=..."}]
     }
   ],
   "culture": [
@@ -1354,6 +1376,8 @@ Return ONLY valid JSON, no markdown, no explanation:
 
 Rules:
 - Exactly 5 recommendations, exactly 6 culture items
+- For watch: include real streaming platforms (Crunchyroll, Netflix, Hulu, Amazon Prime, Funimation, HiDive, YouTube, Viz, Shonen Jump) with accurate URLs
+- For buy: include where to buy hard copies or digital (Amazon, RightStuf, Barnes & Noble, Book Depository, Kindle) with search URLs like https://www.amazon.com/s?k=TITLE+manga
 - Culture items must be SPECIFIC named products (e.g. "Ripple Junction Naruto Shippuden Akatsuki Symbol Zip Hoodie" not just "hoodie")
 - Spread culture across: 1 clothing, 1 poster, 1 shoes, 1 jewelry, 1 tattoo idea, 1 figure or accessory
 - Tattoo: describe a specific design (e.g. "Fine-line minimalist Sharingan eye on the inner wrist")
