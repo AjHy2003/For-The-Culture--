@@ -20,8 +20,8 @@
 
 Enter a title you love (like Naruto or Solo Leveling) or pick filters by medium, genre, mood, and length. Claude AI returns:
 
-- **5 media recommendations** — anime, manga, manhwa, manhua, light novels, web novels, movies, or live action — with cover art pulled from MyAnimeList
-- **6 lifestyle & merch picks** — specific real products across clothing, posters, shoes, jewelry, tattoo ideas, and figures with direct links to Amazon, Hot Topic, Crunchyroll Shop, Etsy, StockX, and more
+- **5 media recommendations** anime, manga, manhwa, manhua, light novels, web novels, movies, or live action with cover art pulled from MyAnimeList
+- **6 lifestyle & merch picks** specific real products across clothing, posters, shoes, jewelry, tattoo ideas, and figures with direct links to Amazon, Hot Topic, Crunchyroll Shop, Etsy, StockX, and more
 
 Click any card to open a modal with full details, where to watch/stream, and where to buy hard copies.
 
